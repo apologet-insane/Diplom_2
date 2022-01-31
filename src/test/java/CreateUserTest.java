@@ -1,3 +1,7 @@
+import api.Base;
+import api.CreateUser;
+import api.DeleteUser;
+import api.Login;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
@@ -5,110 +9,87 @@ import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import static io.restassured.RestAssured.given;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 
 public class CreateUserTest {
 
     String userName = RandomStringUtils.randomAlphabetic(10);
     String userPassword = RandomStringUtils.randomAlphabetic(10);
-    String userMail = RandomStringUtils.randomAlphabetic(5)+"@" + RandomStringUtils.randomAlphabetic(5)+".ru" ;
+    String userMail = RandomStringUtils.randomAlphabetic(5) + "@" + RandomStringUtils.randomAlphabetic(5) + ".ru";
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
+        RestAssured.baseURI = Base.BASE_URL;
     }
 
     @Test
     @DisplayName("Проверка создания пользователя: код ответа")
-    public void createUserPosistive(){
-        Response response = createUserPositive(registerRequestBody());
-        response.then().assertThat().statusCode(200);
+    public void createUserPosistive() {
+        Response response = CreateUser.createUser(registerRequestBody());
+        response
+                .then()
+                .assertThat()
+                .statusCode(200);
 
-     }
-
-    @Step ("Позитивный запрос на создание пользователя")
-    public Response createUserPositive (String body){
-
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(body)
-                .when()
-                .post("/api/auth/register");
-
-        return response;
     }
 
     @Step("Получить JSON для тела реквеста")
-    public String registerRequestBody(){
+    public String registerRequestBody() {
 
         String registerRequestBody = "{\"name\":\"" + userName + "\","
                 + "\"password\":\"" + userPassword + "\","
                 + "\"email\":\"" + userMail + "\"}";
+
         return registerRequestBody;
     }
 
     @Step
-    public void deleteTestUser1(){
-        String token = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(registerRequestBody())
-                .when()
-                .post("/api/auth/login").then().extract().path("accessToken");
+    public void deleteTestUser1() {
+        String token = Login
+                .login(registerRequestBody())
+                .then()
+                .extract()
+                .path("accessToken");
 
-        given()
-                .auth().oauth2(token.substring(7))
-                .when()
-                .delete("/api/auth/user");
+        DeleteUser.deleteUser(token.substring(7));
 
-       }
+    }
 
     @Test
     @DisplayName("Нельзя создать пользователя, который уже зарегистрирован")
     public void testTwoSameUsers() {
         Response response = createTwoSameUsers(registerRequestBody());
-        response.then().assertThat().statusCode(403);
-        response.then().assertThat().
-                body("message", equalTo("User already exists"));
+        response
+                .then()
+                .assertThat()
+                .statusCode(403);
 
-       }
+        response
+                .then()
+                .assertThat()
+                .body("message", equalTo("User already exists"));
+
+    }
 
     @Step("Создание пользователя, который уже зарегистрирован")
-    public Response createTwoSameUsers(String body){
+    public Response createTwoSameUsers(String body) {
 
-        given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(body)
-                .when()
-                .post("/api/auth/register");
-
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(body)
-                .when()
-                .post("/api/auth/register");
+        CreateUser.createUser(registerRequestBody());
+        Response response = CreateUser.createUser(registerRequestBody());
 
         return response;
     }
 
     @Step
-    public void deleteTestUser2(){
-        String token = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(registerRequestBody())
-                .when()
-                .post("/api/auth/login").then().extract().path("accessToken");
+    public void deleteTestUser2() {
+        String token = Login.login(registerRequestBody())
+                .then()
+                .extract()
+                .path("accessToken");
 
-        given()
-                .auth().oauth2(token.substring(7))
-                .when()
-                .delete("/api/auth/user");
+        DeleteUser.deleteUser(token.substring(7));
 
 
     }
@@ -118,9 +99,13 @@ public class CreateUserTest {
             "если нет имени, возвращается ошибка")
     public void testCreateUserWithoutName() {
 
-        Response response = createUserWithoutName(registerRequestBodyWithoutName());
-        String messageWithoutName = response.then().assertThat()
-                .statusCode(403).and().extract()
+        Response response = CreateUser.createUser(registerRequestBodyWithoutName());
+        String messageWithoutName = response
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .and()
+                .extract()
                 .path("message");
 
         assertThat(messageWithoutName, equalTo("Email, password and name are required fields"));
@@ -128,34 +113,26 @@ public class CreateUserTest {
     }
 
     @Step("Получить JSON для тела реквеста без имени")
-    public String registerRequestBodyWithoutName(){
+    public String registerRequestBodyWithoutName() {
 
         String registerRequestBody = "{\"password\":\"" + userPassword + "\","
                 + "\"email\":\"" + userMail + "\"}";
         return registerRequestBody;
     }
 
-    @Step ("Создание пользователя без имени")
-    public Response createUserWithoutName (String body){
-
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(body)
-                .when()
-                .post("/api/auth/register");
-
-        return response;
-    }
-
     @Test
     @DisplayName("Чтобы создать пользователя, нужно передать в ручку все обязательные поля: " +
             "если нет пароля, возвращается ошибка")
-    public void testCreateUserWithoutPassword(){
+    public void testCreateUserWithoutPassword() {
 
-        Response response = createUserWithoutPassword(registerRequestBodyWithoutPassword());
+        Response response = CreateUser.createUser(registerRequestBodyWithoutPassword());
         String messageWithoutPassword =
-                response.then().assertThat().statusCode(403).and().extract()
+                response
+                        .then()
+                        .assertThat()
+                        .statusCode(403)
+                        .and()
+                        .extract()
                         .path("message");
 
         assertThat(messageWithoutPassword, equalTo("Email, password and name are required fields"));
@@ -163,59 +140,38 @@ public class CreateUserTest {
     }
 
     @Step("Получить JSON для тела реквеста без пароля")
-    public String registerRequestBodyWithoutPassword(){
+    public String registerRequestBodyWithoutPassword() {
 
-        String registerRequestBody =  "{\"name\":\"" + userName + "\","
+        String registerRequestBody = "{\"name\":\"" + userName + "\","
                 + "\"email\":\"" + userMail + "\"}";
         return registerRequestBody;
     }
 
-    @Step ("Создание пользователя без пароля")
-    public Response createUserWithoutPassword (String body){
-
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(body)
-                .when()
-                .post("/api/auth/register");
-
-        return response;
-    }
 
     @Test
     @DisplayName("Чтобы создать пользователя, нужно передать в ручку все обязательные поля: " +
             "если нет почты, возвращается ошибка")
-    public void testCreateUserWithoutEmail(){
+    public void testCreateUserWithoutEmail() {
 
-        Response response = createUserWithoutEmail(registerRequestBodyWithoutEmail());
-        String messageWithoutEmail =
-                response.then().assertThat().statusCode(403).and().extract()
-                        .path("message");
+        Response response = CreateUser.createUser(registerRequestBodyWithoutEmail());
+        String messageWithoutEmail = response
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .and()
+                .extract()
+                .path("message");
 
         assertThat(messageWithoutEmail, equalTo("Email, password and name are required fields"));
 
     }
 
     @Step("Получить JSON для тела реквеста без почты")
-    public String registerRequestBodyWithoutEmail(){
+    public String registerRequestBodyWithoutEmail() {
 
-        String registerRequestBody =  "{\"name\":\"" + userName + "\","
+        String registerRequestBody = "{\"name\":\"" + userName + "\","
                 + "\"passwoer\":\"" + userPassword + "\"}";
         return registerRequestBody;
-    }
-
-    @Step ("Создание пользователя без почты")
-    public Response createUserWithoutEmail (String body){
-
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(body)
-                .when()
-                .post("/api/auth/register");
-
-        return response;
     }
 
 }
