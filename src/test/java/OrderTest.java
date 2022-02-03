@@ -64,9 +64,6 @@ public class OrderTest {
         String token = Login
                 .login(testUser())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("accessToken");
 
@@ -79,9 +76,6 @@ public class OrderTest {
         String ing = Ingredient
                 .ingredient(userToken())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("data[0]._id");
 
@@ -94,9 +88,6 @@ public class OrderTest {
         String ing = Ingredient
                 .ingredient(userToken())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("data[1]._id");
 

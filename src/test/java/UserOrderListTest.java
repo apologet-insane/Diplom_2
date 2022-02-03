@@ -64,9 +64,6 @@ public class UserOrderListTest {
         String token = Login
                 .login(bodyLogin())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("accessToken");
 
@@ -80,9 +77,6 @@ public class UserOrderListTest {
         String ing = Ingredient
                 .ingredient(userToken())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("data[0]._id");
 
@@ -96,9 +90,6 @@ public class UserOrderListTest {
         String ing = Ingredient
                 .ingredient(userToken())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("data[1]._id");
 
@@ -112,9 +103,6 @@ public class UserOrderListTest {
         String ing = Ingredient
                 .ingredient(userToken())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("data[2]._id");
 
@@ -128,9 +116,6 @@ public class UserOrderListTest {
         String ing = Ingredient
                 .ingredient(userToken())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("data[3]._id");
 
@@ -195,7 +180,6 @@ public class UserOrderListTest {
         assertThat(message, equalTo("You should be authorised"));
 
     }
-
 
     @After
     public void tearDown() {

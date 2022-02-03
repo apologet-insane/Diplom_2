@@ -3,6 +3,7 @@ import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +34,7 @@ public class PatchUserTest {
     @Test
     @DisplayName("Изменения данных пользователя с авторизацией: имя")
     public void testPositvePatchWithAuthorizationName() {
+
         boolean success = PatchUser
                 .patchUser(userToken(), testPositiveUserName())
                 .then()
@@ -42,14 +44,14 @@ public class PatchUserTest {
                 .extract()
                 .path("success");
 
-        assertThat(String.valueOf(success), true);
+        assertThat(success, equalTo(true));
 
     }
 
-
     @Step("Тело для изменения имени")
     public String testPositiveUserName() {
-        String registerRequestBody = "{\"name\":\"" + userName + userName + "\"}";
+
+        String registerRequestBody = "{\"name\":\"" + userName + "\"}";
 
         return registerRequestBody;
     }
@@ -69,9 +71,6 @@ public class PatchUserTest {
         String token = Login
                 .login(bodyLogin())
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
                 .extract()
                 .path("accessToken");
 
@@ -92,7 +91,7 @@ public class PatchUserTest {
                 .extract()
                 .path("success");
 
-        assertThat(String.valueOf(success), true);
+        assertThat(success, equalTo(true));
 
     }
 
@@ -100,7 +99,7 @@ public class PatchUserTest {
     @Step("Тело для изменения email")
     public String testPositiveUserMail() {
 
-        String registerRequestBody = "{\"email\":\"" + userName + userMail + "\"}";
+        String registerRequestBody = "{\"email\":\"" + userMail + "\"}";
 
         return registerRequestBody;
     }
@@ -118,7 +117,7 @@ public class PatchUserTest {
                 .extract()
                 .path("success");
 
-        assertThat(String.valueOf(success), true);
+        assertThat(success, equalTo(true));
 
     }
 
@@ -126,7 +125,7 @@ public class PatchUserTest {
     @Step("Тело для изменения пароля")
     public String testPositiveUserPassword() {
 
-        String registerRequestBody = "{\"password\":\"" + userName + userPassword + "\"}";
+        String registerRequestBody = "{\"password\":\"" + userPassword + "\"}";
 
         return registerRequestBody;
     }
@@ -182,7 +181,7 @@ public class PatchUserTest {
 
     }
 
-    @Step("Если поместить этот метод в After, все тесты падают")
+    @After
     public void tearDown() {
 
         DeleteUser

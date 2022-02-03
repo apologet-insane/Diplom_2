@@ -1,11 +1,13 @@
 package api;
 
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.given;
 
 public class CreateUser {
 
+    @Step("Создание пользователя")
     public static Response createUser(String body) {
 
         Response response = given()

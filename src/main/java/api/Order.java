@@ -1,11 +1,13 @@
 package api;
 
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.given;
 
 public class Order {
 
+    @Step("Формирование заказа")
     public static Response order(String token, String body) {
 
         Response orderResponse = given()
